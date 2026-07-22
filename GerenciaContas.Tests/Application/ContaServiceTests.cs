@@ -1,7 +1,6 @@
 using GerenciaContas.Application.Common;
 using GerenciaContas.Application.DTOs;
 using GerenciaContas.Application.Services;
-using GerenciaContas.Domain.Enums;
 using GerenciaContas.Domain.Events;
 using GerenciaContas.Tests.Fakes;
 
@@ -26,18 +25,21 @@ public class ContaServiceTests
     {
         var resposta = await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
 
-        Assert.NotEqual(Guid.Empty, resposta.Id);
-        Assert.Equal(StatusConta.Ativa, resposta.Status);
+        Assert.True(resposta.Sucedido);
+        Assert.NotEqual(Guid.Empty, resposta.Valor!.Id);
+        Assert.True(resposta.Valor.Ativa);
         Assert.Contains(_dispatcher.EventosPublicados, e => e is ContaCriadaEvent);
     }
 
     [Fact]
-    public async Task CriarAsync_ComCpfDuplicado_LancaConflito()
+    public async Task CriarAsync_ComCpfDuplicado_RetornaConflito()
     {
         await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
 
-        await Assert.ThrowsAsync<ConflitoException>(() =>
-            _service.CriarAsync(new CriarContaRequest("Outro Nome", CpfValido)));
+        var resultado = await _service.CriarAsync(new CriarContaRequest("Outro Nome", CpfValido));
+
+        Assert.Equal(ResultStatus.Conflito, resultado.Status);
+        Assert.Null(resultado.Valor);
     }
 
     [Fact]
@@ -63,19 +65,32 @@ public class ContaServiceTests
         await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
 
         var atualizada = await _service.AtualizarAsync(
-            CpfValido, new AtualizarContaRequest("João P. Silva", StatusConta.Inativa));
+            CpfValido, new AtualizarContaRequest("João P. Silva", false));
 
         Assert.NotNull(atualizada);
         Assert.Equal("João P. Silva", atualizada!.NomeTitular);
-        Assert.Equal(StatusConta.Inativa, atualizada.Status);
+        Assert.False(atualizada.Ativa);
         Assert.Contains(_dispatcher.EventosPublicados, e => e is ContaAtualizadaEvent);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_SomenteStatus_MantemNomeEInativa()
+    {
+        await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
+
+        var atualizada = await _service.AtualizarAsync(
+            CpfValido, new AtualizarContaRequest(Ativa: false));
+
+        Assert.NotNull(atualizada);
+        Assert.Equal("João Silva", atualizada!.NomeTitular);
+        Assert.False(atualizada.Ativa);
     }
 
     [Fact]
     public async Task AtualizarAsync_ContaInexistente_RetornaNull()
     {
         var resultado = await _service.AtualizarAsync(
-            OutroCpfValido, new AtualizarContaRequest("Nome", StatusConta.Ativa));
+            OutroCpfValido, new AtualizarContaRequest("Nome", true));
 
         Assert.Null(resultado);
     }

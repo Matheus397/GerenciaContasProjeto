@@ -1,4 +1,5 @@
 using GerenciaContas.Application.Abstractions;
+using GerenciaContas.Application.Common;
 using GerenciaContas.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,8 +34,18 @@ public sealed class ContasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ContaResponse>> Criar([FromBody] CriarContaRequest request, CancellationToken ct)
     {
-        var conta = await _service.CriarAsync(request, ct);
-        return CreatedAtAction(nameof(ObterPorCpf), new { cpf = SomenteDigitos(conta.Cpf) }, conta);
+        var resultado = await _service.CriarAsync(request, ct);
+
+        if (resultado.Status == ResultStatus.Conflito)
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "CPF já cadastrado",
+                Detail = resultado.Erro
+            });
+
+        var conta = resultado.Valor!;
+        return CreatedAtAction(nameof(ObterPorCpf), new { cpf = conta.Cpf.SomenteDigitos() }, conta);
     }
 
     [HttpPut("{cpf}")]
@@ -56,6 +67,4 @@ public sealed class ContasController : ControllerBase
         var removida = await _service.RemoverAsync(cpf, ct);
         return removida ? NoContent() : NotFound();
     }
-
-    private static string SomenteDigitos(string valor) => new(valor.Where(char.IsDigit).ToArray());
 }

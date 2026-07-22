@@ -11,20 +11,27 @@ Content-Type: application/json
 {
   "nomeTitular": "Maria Souza",
   "cpf": "529.982.247-25",
-  "status": 1
+  "ativa": true
 }
 
 ### Obter por CPF (somente dígitos)
 GET {{host}}/api/contas/52998224725
 Accept: application/json
 
-### Atualizar por CPF (status 2 = Inativa)
+### Inativar (só o status, mantém o nome)
 PUT {{host}}/api/contas/52998224725
 Content-Type: application/json
 
 {
-  "nomeTitular": "Maria S. Souza",
-  "status": 2
+  "ativa": false
+}
+
+### Renomear (só o nome, mantém o status)
+PUT {{host}}/api/contas/52998224725
+Content-Type: application/json
+
+{
+  "nomeTitular": "Maria S. Souza"
 }
 
 ### Remover por CPF
@@ -37,7 +44,7 @@ Content-Type: application/json
 {
   "nomeTitular": "Fulano",
   "cpf": "111",
-  "status": 1
+  "ativa": true
 }
 
 ### CPF duplicado -> 409
@@ -47,5 +54,5 @@ Content-Type: application/json
 {
   "nomeTitular": "Outro Titular",
   "cpf": "529.982.247-25",
-  "status": 1
+  "ativa": true
 }

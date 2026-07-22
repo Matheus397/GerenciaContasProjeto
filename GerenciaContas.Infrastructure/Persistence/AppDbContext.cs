@@ -16,7 +16,7 @@ public sealed class AppDbContext : DbContext
         {
             conta.HasKey(c => c.Id);
             conta.Property(c => c.NomeTitular).IsRequired().HasMaxLength(200);
-            conta.Property(c => c.Status).IsRequired();
+            conta.Property(c => c.Ativa).IsRequired();
 
             conta.Property(c => c.Cpf)
                  .HasConversion(cpf => cpf.Numero, valor => Cpf.Criar(valor))

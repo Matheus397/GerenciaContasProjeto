@@ -1,5 +1,4 @@
 using System.Net;
-using GerenciaContas.Application.Common;
 using GerenciaContas.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,10 +24,6 @@ public sealed class ExceptionHandlingMiddleware
         catch (DomainException ex)
         {
             await EscreverProblema(context, HttpStatusCode.BadRequest, "Requisição inválida", ex.Message);
-        }
-        catch (ConflitoException ex)
-        {
-            await EscreverProblema(context, HttpStatusCode.Conflict, "Conflito", ex.Message);
         }
         catch (Exception ex)
         {

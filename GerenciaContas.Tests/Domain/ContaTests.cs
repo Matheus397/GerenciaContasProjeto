@@ -1,6 +1,5 @@
 using GerenciaContas.Domain.Common;
 using GerenciaContas.Domain.Entities;
-using GerenciaContas.Domain.Enums;
 using GerenciaContas.Domain.Events;
 using GerenciaContas.Domain.ValueObjects;
 
@@ -15,7 +14,7 @@ public class ContaTests
     {
         var conta = Conta.Criar("Maria Souza", CpfValido());
 
-        Assert.Equal(StatusConta.Ativa, conta.Status);
+        Assert.True(conta.Ativa);
         Assert.Equal("Maria Souza", conta.NomeTitular);
         Assert.Single(conta.DomainEvents);
         Assert.IsType<ContaCriadaEvent>(conta.DomainEvents.First());
@@ -35,11 +34,23 @@ public class ContaTests
         var conta = Conta.Criar("Maria Souza", CpfValido());
         conta.ClearDomainEvents();
 
-        conta.Atualizar("Maria S. Souza", StatusConta.Inativa);
+        conta.Atualizar("Maria S. Souza", false);
 
         Assert.Equal("Maria S. Souza", conta.NomeTitular);
-        Assert.Equal(StatusConta.Inativa, conta.Status);
+        Assert.False(conta.Ativa);
         Assert.IsType<ContaAtualizadaEvent>(conta.DomainEvents.Single());
+    }
+
+    [Fact]
+    public void Atualizar_SomenteStatus_MantemNome()
+    {
+        var conta = Conta.Criar("Maria Souza", CpfValido());
+        conta.ClearDomainEvents();
+
+        conta.Atualizar(null, false);
+
+        Assert.Equal("Maria Souza", conta.NomeTitular);
+        Assert.False(conta.Ativa);
     }
 
     [Fact]

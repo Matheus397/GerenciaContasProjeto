@@ -18,19 +18,21 @@ public sealed class ContaService : IContaService
         _dispatcher = dispatcher;
     }
 
-    public async Task<ContaResponse> CriarAsync(CriarContaRequest request, CancellationToken ct = default)
+    public async Task<Result<ContaResponse>> CriarAsync(CriarContaRequest request, CancellationToken ct = default)
     {
         var cpf = Cpf.Criar(request.Cpf);
 
         if (await _repository.ExisteCpfAsync(cpf, ct))
-            throw new ConflitoException($"Já existe uma conta para o CPF {cpf.Formatado()}.");
+            return Result<ContaResponse>.Conflito(
+                $"O CPF {cpf.Formatado()} já possui uma conta cadastrada. " +
+                "Confira os dados informados ou consulte a conta existente.");
 
-        var conta = Conta.Criar(request.NomeTitular, cpf, request.Status);
+        var conta = Conta.Criar(request.NomeTitular, cpf, request.Ativa);
 
         await _repository.AdicionarAsync(conta, ct);
         await PublicarEventosAsync(conta, ct);
 
-        return ContaResponse.De(conta);
+        return Result<ContaResponse>.Ok(ContaResponse.De(conta));
     }
 
     public async Task<ContaResponse?> ObterPorCpfAsync(string cpf, CancellationToken ct = default)
@@ -50,7 +52,7 @@ public sealed class ContaService : IContaService
         var conta = await _repository.ObterPorCpfAsync(Cpf.Criar(cpf), ct);
         if (conta is null) return null;
 
-        conta.Atualizar(request.NomeTitular, request.Status);
+        conta.Atualizar(request.NomeTitular, request.Ativa);
 
         await _repository.AtualizarAsync(conta, ct);
         await PublicarEventosAsync(conta, ct);
