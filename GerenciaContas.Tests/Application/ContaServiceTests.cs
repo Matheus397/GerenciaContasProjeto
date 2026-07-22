@@ -12,7 +12,6 @@ public class ContaServiceTests
     private const string CpfValido = "52998224725";
     private const string OutroCpfValido = "11144477735";
 
-
     private readonly FakeContaRepository _repo = new();
     private readonly FakeEventDispatcher _dispatcher = new();
     private readonly ContaService _service;
@@ -42,18 +41,29 @@ public class ContaServiceTests
     }
 
     [Fact]
-    public async Task ObterPorIdAsync_QuandoNaoExiste_RetornaNull()
+    public async Task ObterPorCpfAsync_QuandoNaoExiste_RetornaNull()
     {
-        Assert.Null(await _service.ObterPorIdAsync(Guid.NewGuid()));
+        Assert.Null(await _service.ObterPorCpfAsync(OutroCpfValido));
+    }
+
+    [Fact]
+    public async Task ObterPorCpfAsync_QuandoExiste_RetornaConta()
+    {
+        await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
+
+        var conta = await _service.ObterPorCpfAsync(CpfValido);
+
+        Assert.NotNull(conta);
+        Assert.Equal("João Silva", conta!.NomeTitular);
     }
 
     [Fact]
     public async Task AtualizarAsync_ContaExistente_AtualizaEPublicaEvento()
     {
-        var criada = await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
+        await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
 
         var atualizada = await _service.AtualizarAsync(
-            criada.Id, new AtualizarContaRequest("João P. Silva", StatusConta.Inativa));
+            CpfValido, new AtualizarContaRequest("João P. Silva", StatusConta.Inativa));
 
         Assert.NotNull(atualizada);
         Assert.Equal("João P. Silva", atualizada!.NomeTitular);
@@ -65,7 +75,7 @@ public class ContaServiceTests
     public async Task AtualizarAsync_ContaInexistente_RetornaNull()
     {
         var resultado = await _service.AtualizarAsync(
-            Guid.NewGuid(), new AtualizarContaRequest("Nome", StatusConta.Ativa));
+            OutroCpfValido, new AtualizarContaRequest("Nome", StatusConta.Ativa));
 
         Assert.Null(resultado);
     }
@@ -73,19 +83,19 @@ public class ContaServiceTests
     [Fact]
     public async Task RemoverAsync_ContaExistente_RemoveEPublicaEvento()
     {
-        var criada = await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
+        await _service.CriarAsync(new CriarContaRequest("João Silva", CpfValido));
 
-        var removida = await _service.RemoverAsync(criada.Id);
+        var removida = await _service.RemoverAsync(CpfValido);
 
         Assert.True(removida);
-        Assert.Null(await _service.ObterPorIdAsync(criada.Id));
+        Assert.Null(await _service.ObterPorCpfAsync(CpfValido));
         Assert.Contains(_dispatcher.EventosPublicados, e => e is ContaDeletadaEvent);
     }
 
     [Fact]
     public async Task RemoverAsync_ContaInexistente_RetornaFalse()
     {
-        Assert.False(await _service.RemoverAsync(Guid.NewGuid()));
+        Assert.False(await _service.RemoverAsync(OutroCpfValido));
     }
 
     [Fact]

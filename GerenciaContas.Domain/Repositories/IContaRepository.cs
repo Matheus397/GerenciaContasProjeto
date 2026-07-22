@@ -5,7 +5,7 @@ namespace GerenciaContas.Domain.Repositories;
 
 public interface IContaRepository
 {
-    Task<Conta?> ObterPorIdAsync(Guid id, CancellationToken ct = default);
+    Task<Conta?> ObterPorCpfAsync(Cpf cpf, CancellationToken ct = default);
     Task<IReadOnlyList<Conta>> ListarAsync(CancellationToken ct = default);
     Task<bool> ExisteCpfAsync(Cpf cpf, CancellationToken ct = default);
     Task AdicionarAsync(Conta conta, CancellationToken ct = default);

@@ -8,8 +8,8 @@ public sealed class FakeContaRepository : IContaRepository
 {
     private readonly Dictionary<Guid, Conta> _contas = new();
 
-    public Task<Conta?> ObterPorIdAsync(Guid id, CancellationToken ct = default) =>
-        Task.FromResult(_contas.GetValueOrDefault(id));
+    public Task<Conta?> ObterPorCpfAsync(Cpf cpf, CancellationToken ct = default) =>
+        Task.FromResult(_contas.Values.FirstOrDefault(c => c.Cpf == cpf));
 
     public Task<IReadOnlyList<Conta>> ListarAsync(CancellationToken ct = default) =>
         Task.FromResult((IReadOnlyList<Conta>)_contas.Values.ToList());

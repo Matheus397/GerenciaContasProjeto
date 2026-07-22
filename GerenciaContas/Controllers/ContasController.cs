@@ -17,12 +17,13 @@ public sealed class ContasController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ContaResponse>>> Listar(CancellationToken ct)
         => Ok(await _service.ListarAsync(ct));
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{cpf}")]
     [ProducesResponseType(typeof(ContaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ContaResponse>> ObterPorId(Guid id, CancellationToken ct)
+    public async Task<ActionResult<ContaResponse>> ObterPorCpf([FromRoute] string cpf, CancellationToken ct)
     {
-        var conta = await _service.ObterPorIdAsync(id, ct);
+        var conta = await _service.ObterPorCpfAsync(cpf, ct);
         return conta is null ? NotFound() : Ok(conta);
     }
 
@@ -30,28 +31,31 @@ public sealed class ContasController : ControllerBase
     [ProducesResponseType(typeof(ContaResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ContaResponse>> Criar(CriarContaRequest request, CancellationToken ct)
+    public async Task<ActionResult<ContaResponse>> Criar([FromBody] CriarContaRequest request, CancellationToken ct)
     {
         var conta = await _service.CriarAsync(request, ct);
-        return CreatedAtAction(nameof(ObterPorId), new { id = conta.Id }, conta);
+        return CreatedAtAction(nameof(ObterPorCpf), new { cpf = SomenteDigitos(conta.Cpf) }, conta);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{cpf}")]
     [ProducesResponseType(typeof(ContaResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ContaResponse>> Atualizar(Guid id, AtualizarContaRequest request, CancellationToken ct)
+    public async Task<ActionResult<ContaResponse>> Atualizar(
+        [FromRoute] string cpf, [FromBody] AtualizarContaRequest request, CancellationToken ct)
     {
-        var conta = await _service.AtualizarAsync(id, request, ct);
+        var conta = await _service.AtualizarAsync(cpf, request, ct);
         return conta is null ? NotFound() : Ok(conta);
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{cpf}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Remover(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Remover([FromRoute] string cpf, CancellationToken ct)
     {
-        var removida = await _service.RemoverAsync(id, ct);
+        var removida = await _service.RemoverAsync(cpf, ct);
         return removida ? NoContent() : NotFound();
     }
+
+    private static string SomenteDigitos(string valor) => new(valor.Where(char.IsDigit).ToArray());
 }

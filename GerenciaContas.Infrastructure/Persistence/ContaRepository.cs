@@ -11,8 +11,8 @@ public sealed class ContaRepository : IContaRepository
 
     public ContaRepository(AppDbContext context) => _context = context;
 
-    public async Task<Conta?> ObterPorIdAsync(Guid id, CancellationToken ct = default) =>
-        await _context.Contas.FirstOrDefaultAsync(c => c.Id == id, ct);
+    public async Task<Conta?> ObterPorCpfAsync(Cpf cpf, CancellationToken ct = default) =>
+        await _context.Contas.FirstOrDefaultAsync(c => c.Cpf == cpf, ct);
 
     public async Task<IReadOnlyList<Conta>> ListarAsync(CancellationToken ct = default) =>
         await _context.Contas.AsNoTracking().ToListAsync(ct);

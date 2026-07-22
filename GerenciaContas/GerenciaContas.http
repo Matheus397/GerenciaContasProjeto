@@ -14,12 +14,12 @@ Content-Type: application/json
   "status": 1
 }
 
-### Obter por Id (troque o GUID por um retornado na criação)
-GET {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+### Obter por CPF (somente dígitos)
+GET {{host}}/api/contas/52998224725
 Accept: application/json
 
-### Atualizar (status 2 = Inativa)
-PUT {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+### Atualizar por CPF (status 2 = Inativa)
+PUT {{host}}/api/contas/52998224725
 Content-Type: application/json
 
 {
@@ -27,8 +27,8 @@ Content-Type: application/json
   "status": 2
 }
 
-### Remover
-DELETE {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+### Remover por CPF
+DELETE {{host}}/api/contas/52998224725
 
 ### CPF inválido -> 400
 POST {{host}}/api/contas
@@ -37,5 +37,15 @@ Content-Type: application/json
 {
   "nomeTitular": "Fulano",
   "cpf": "111",
+  "status": 1
+}
+
+### CPF duplicado -> 409
+POST {{host}}/api/contas
+Content-Type: application/json
+
+{
+  "nomeTitular": "Outro Titular",
+  "cpf": "529.982.247-25",
   "status": 1
 }

@@ -24,18 +24,18 @@ public sealed class CachedContaRepository : IContaRepository
         _logger = logger;
     }
 
-    public async Task<Conta?> ObterPorIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<Conta?> ObterPorCpfAsync(Cpf cpf, CancellationToken ct = default)
     {
-        var chave = ChaveDe(id);
+        var chave = ChaveDe(cpf);
 
         if (_cache.TryGetValue(chave, out Conta? emCache))
         {
-            _logger.LogInformation("Cache HIT para conta {ContaId} (consulta ao banco evitada).", id);
+            _logger.LogInformation("Cache HIT para CPF {Cpf} (consulta ao banco evitada).", cpf.Numero);
             return emCache;
         }
 
-        _logger.LogInformation("Cache MISS para conta {ContaId} (consultando o banco).", id);
-        var conta = await _inner.ObterPorIdAsync(id, ct);
+        _logger.LogInformation("Cache MISS para CPF {Cpf} (consultando o banco).", cpf.Numero);
+        var conta = await _inner.ObterPorCpfAsync(cpf, ct);
 
         if (conta is not null)
             _cache.Set(chave, conta, OpcoesExpiracaoFimDoDia());
@@ -52,22 +52,22 @@ public sealed class CachedContaRepository : IContaRepository
     public async Task AdicionarAsync(Conta conta, CancellationToken ct = default)
     {
         await _inner.AdicionarAsync(conta, ct);
-        _cache.Set(ChaveDe(conta.Id), conta, OpcoesExpiracaoFimDoDia());
+        _cache.Set(ChaveDe(conta.Cpf), conta, OpcoesExpiracaoFimDoDia());
     }
 
     public async Task AtualizarAsync(Conta conta, CancellationToken ct = default)
     {
         await _inner.AtualizarAsync(conta, ct);
-        _cache.Set(ChaveDe(conta.Id), conta, OpcoesExpiracaoFimDoDia());
+        _cache.Set(ChaveDe(conta.Cpf), conta, OpcoesExpiracaoFimDoDia());
     }
 
     public async Task RemoverAsync(Conta conta, CancellationToken ct = default)
     {
         await _inner.RemoverAsync(conta, ct);
-        _cache.Remove(ChaveDe(conta.Id));
+        _cache.Remove(ChaveDe(conta.Cpf));
     }
 
-    private static string ChaveDe(Guid id) => PrefixoConta + id;
+    private static string ChaveDe(Cpf cpf) => PrefixoConta + cpf.Numero;
 
     private static MemoryCacheEntryOptions OpcoesExpiracaoFimDoDia()
     {

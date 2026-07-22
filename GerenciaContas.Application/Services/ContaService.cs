@@ -33,9 +33,9 @@ public sealed class ContaService : IContaService
         return ContaResponse.De(conta);
     }
 
-    public async Task<ContaResponse?> ObterPorIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<ContaResponse?> ObterPorCpfAsync(string cpf, CancellationToken ct = default)
     {
-        var conta = await _repository.ObterPorIdAsync(id, ct);
+        var conta = await _repository.ObterPorCpfAsync(Cpf.Criar(cpf), ct);
         return conta is null ? null : ContaResponse.De(conta);
     }
 
@@ -45,9 +45,9 @@ public sealed class ContaService : IContaService
         return contas.Select(ContaResponse.De).ToList();
     }
 
-    public async Task<ContaResponse?> AtualizarAsync(Guid id, AtualizarContaRequest request, CancellationToken ct = default)
+    public async Task<ContaResponse?> AtualizarAsync(string cpf, AtualizarContaRequest request, CancellationToken ct = default)
     {
-        var conta = await _repository.ObterPorIdAsync(id, ct);
+        var conta = await _repository.ObterPorCpfAsync(Cpf.Criar(cpf), ct);
         if (conta is null) return null;
 
         conta.Atualizar(request.NomeTitular, request.Status);
@@ -58,9 +58,9 @@ public sealed class ContaService : IContaService
         return ContaResponse.De(conta);
     }
 
-    public async Task<bool> RemoverAsync(Guid id, CancellationToken ct = default)
+    public async Task<bool> RemoverAsync(string cpf, CancellationToken ct = default)
     {
-        var conta = await _repository.ObterPorIdAsync(id, ct);
+        var conta = await _repository.ObterPorCpfAsync(Cpf.Criar(cpf), ct);
         if (conta is null) return false;
 
         conta.MarcarComoRemovida();
