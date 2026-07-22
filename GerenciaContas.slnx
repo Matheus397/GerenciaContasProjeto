@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="GerenciaContas.Application/GerenciaContas.Application.csproj" />
+  <Project Path="GerenciaContas.Domain/GerenciaContas.Domain.csproj" />
+  <Project Path="GerenciaContas.Infrastructure/GerenciaContas.Infrastructure.csproj" />
+  <Project Path="GerenciaContas.Tests/GerenciaContas.Tests.csproj" />
+  <Project Path="GerenciaContas/GerenciaContas.csproj" />
+</Solution>

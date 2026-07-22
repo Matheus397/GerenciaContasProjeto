@@ -1,0 +1,41 @@
+@host = http://localhost:5191
+
+### Listar contas
+GET {{host}}/api/contas
+Accept: application/json
+
+### Criar conta
+POST {{host}}/api/contas
+Content-Type: application/json
+
+{
+  "nomeTitular": "Maria Souza",
+  "cpf": "529.982.247-25",
+  "status": 1
+}
+
+### Obter por Id (troque o GUID por um retornado na criação)
+GET {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Atualizar (status 2 = Inativa)
+PUT {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "nomeTitular": "Maria S. Souza",
+  "status": 2
+}
+
+### Remover
+DELETE {{host}}/api/contas/00000000-0000-0000-0000-000000000000
+
+### CPF inválido -> 400
+POST {{host}}/api/contas
+Content-Type: application/json
+
+{
+  "nomeTitular": "Fulano",
+  "cpf": "111",
+  "status": 1
+}
