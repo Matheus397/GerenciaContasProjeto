@@ -42,13 +42,6 @@ public sealed class Conta : Entity
         RaiseDomainEvent(new ContaAtualizadaEvent(Id, NomeTitular, Status));
     }
 
-    public void Inativar()
-    {
-        if (Status == StatusConta.Inativa) return;
-        Status = StatusConta.Inativa;
-        RaiseDomainEvent(new ContaAtualizadaEvent(Id, NomeTitular, Status));
-    }
-
     public void MarcarComoRemovida() => RaiseDomainEvent(new ContaDeletadaEvent(Id));
 
     private static void ValidarNome(string nome)

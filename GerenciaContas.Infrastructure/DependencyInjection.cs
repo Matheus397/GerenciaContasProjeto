@@ -21,10 +21,9 @@ public static class DependencyInjection
         services.AddMemoryCache();
 
         services.AddScoped<ContaRepository>();
-        services.AddScoped<IContaRepository>(sp => new CachedContaRepository(
-            sp.GetRequiredService<ContaRepository>(),
-            sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<CachedContaRepository>>()));
+        services.AddScoped<IContaRepository>(sp =>
+            ActivatorUtilities.CreateInstance<CachedContaRepository>(
+                sp, sp.GetRequiredService<ContaRepository>()));
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IEventoContaHandler, PrevencaoFraudeHandler>());
